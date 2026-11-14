@@ -1,0 +1,8 @@
+# Geofabrik extracts to include (one per line, path without "-latest.osm.pbf").
+# Lines starting with # are ignored. Bigger regions take longer to build.
+africa/morocco
+europe/spain
+europe/portugal
+europe/france
+europe/belgium
+europe/netherlands
