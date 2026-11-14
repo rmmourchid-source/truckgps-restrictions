@@ -1,0 +1,84 @@
+name: Build truck restriction database
+
+on:
+  schedule:
+    - cron: "0 3 2 * *"   # 03:00 UTC on the 2nd of every month
+  workflow_dispatch: {}    # "Run workflow" button for a manual build
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 150
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install osmium
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y osmium-tool
+
+      - name: Download and filter OpenStreetMap extracts
+        run: |
+          set -euo pipefail
+          mkdir -p work
+          while IFS= read -r region || [ -n "$region" ]; do
+            region="$(echo "$region" | xargs)"
+            case "$region" in ""|\#*) continue ;; esac
+            name="$(basename "$region")"
+            echo "== $region"
+            curl -fsSL --retry 3 -o "work/$name.osm.pbf" "https://download.geofabrik.de/$region-latest.osm.pbf"
+            curl -fsSL --retry 3 -o "work/$name.poly" "https://download.geofabrik.de/$region.poly"
+            osmium tags-filter "work/$name.osm.pbf" \
+              nw/maxheight nw/maxheight:physical nw/maxheight:hgv \
+              nw/maxwidth nw/maxwidth:physical nw/maxwidth:hgv \
+              nw/maxlength nw/maxlength:hgv \
+              nw/maxweight nw/maxweight:hgv nw/maxweightrating nw/maxweightrating:hgv \
+              nw/maxaxleload nw/maxaxleload:hgv \
+              w/hgv=no w/goods=no w/hgv_articulated=no w/trailer=no w/overtaking:hgv=no \
+              w/bridge w/man_made=bridge \
+              -o "work/$name.filtered.osm.pbf" --overwrite
+            rm -f "work/$name.osm.pbf"
+            osmium export "work/$name.filtered.osm.pbf" \
+              -c build/export-config.json \
+              -f geojsonseq -x print_record_separator=false \
+              -o "work/$name.geojsonseq" --overwrite
+            rm -f "work/$name.filtered.osm.pbf"
+            ls -lh "work/$name.geojsonseq"
+          done < build/regions.txt
+
+      - name: Build database
+        run: |
+          python3 build/build_db.py work restrictions.db
+          gzip -9 -k restrictions.db
+          ls -lh restrictions.db restrictions.db.gz
+
+      - name: Write manifest
+        run: |
+          python3 - <<'PY'
+          import hashlib, json, os, sqlite3
+          meta = dict(sqlite3.connect("restrictions.db").execute("SELECT key, value FROM meta"))
+          data = open("restrictions.db.gz", "rb").read()
+          manifest = {
+              "version": meta["version"],
+              "built_at": meta["built_at"],
+              "regions": meta["regions"].split(","),
+              "restrictions": int(meta["restrictions"]),
+              "bytes": len(data),
+              "sha256": hashlib.sha256(data).hexdigest(),
+              "attribution": meta["attribution"],
+          }
+          json.dump(manifest, open("manifest.json", "w"), indent=2)
+          print(json.dumps(manifest, indent=2))
+          PY
+
+      - name: Publish as release "latest"
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release delete latest --yes --cleanup-tag || true
+          gh release create latest restrictions.db.gz manifest.json \
+            --title "Truck restrictions $(date -u +%Y-%m-%d)" \
+            --notes "Built from OpenStreetMap (c) OpenStreetMap contributors, ODbL 1.0."
