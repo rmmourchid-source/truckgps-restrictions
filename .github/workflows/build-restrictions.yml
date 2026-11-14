@@ -10,7 +10,8 @@ permissions:
 
 jobs:
   build:
-       runs-on: ubuntu-24.04
+    # Pinned: osmium-tool is a known-good package on Ubuntu 24.04.
+    runs-on: ubuntu-24.04
     timeout-minutes: 150
     steps:
       - uses: actions/checkout@v4
@@ -19,6 +20,7 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y osmium-tool
+          osmium --version
 
       - name: Download and filter OpenStreetMap extracts
         run: |
