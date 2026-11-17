@@ -6,3 +6,13 @@ europe/portugal
 europe/france
 europe/belgium
 europe/netherlands
+europe/germany
+europe/italy
+europe/poland
+europe/hungary
+europe/romania
+europe/slovenia
+europe/slovakia
+europe/austria
+europe/serbia
+europe/lithuania
