@@ -87,6 +87,16 @@ def is_access_no(tags):
     return any(str(tags.get(k, "")).strip().lower() == "no" for k in ACCESS_NO_KEYS)
 
 
+def is_destination_only(tags):
+    """Trucks allowed only for local delivery (hgv/goods=destination|delivery).
+    The app reports these when a route passes through them, away from the
+    start and the destination."""
+    return any(
+        str(tags.get(k, "")).strip().lower() in ("destination", "delivery")
+        for k in ("hgv", "goods")
+    )
+
+
 def is_bridge(tags):
     return active(tags.get("bridge", "no")) or tags.get("man_made") == "bridge"
 
@@ -184,7 +194,9 @@ def main(work_dir, output_path):
             tags = {k: v for k, v in props.items() if k in KEEP_KEYS}
 
             if osm_type == "way":
-                restriction = "highway" in tags and (is_physical(tags) or is_access_no(tags))
+                restriction = "highway" in tags and (
+                    is_physical(tags) or is_access_no(tags) or is_destination_only(tags)
+                )
             else:
                 restriction = is_physical(tags)
 
