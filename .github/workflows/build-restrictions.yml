@@ -40,6 +40,7 @@ jobs:
               nw/maxweight nw/maxweight:hgv nw/maxweightrating nw/maxweightrating:hgv \
               nw/maxaxleload nw/maxaxleload:hgv \
               w/hgv=no w/goods=no w/hgv_articulated=no w/trailer=no w/overtaking:hgv=no \
+              w/hgv=destination,delivery w/goods=destination,delivery \
               w/bridge w/man_made=bridge \
               -o "work/$name.filtered.osm.pbf" --overwrite
             # Speed limits: main roads (motorway ... unclassified + links) with a maxspeed.
