@@ -1,1 +1,122 @@
-
+{
+  "_help": "Truck rules for TruckGPS. Edit on GitHub (pencil), then Commit. Phones pick it up within 6 hours (or More… → Offline truck data → Download now). Dates: YYYY-MM-DD (inclusive). min_weight_t: rule applies above this weight. transit_only: true = only when start AND destination are outside 'region'. region: border points [lat, lon]. avoid: rectangles [south, west, north, east] the route must not enter (max 8). Add \"disabled\": true to switch a rule off.",
+  "version": 1,
+  "rules": [
+    {
+      "id": "fr-idf-a13-saint-cloud-2026",
+      "from": "2026-11-16",
+      "to": "2027-08-31",
+      "min_weight_t": 7.5,
+      "transit_only": true,
+      "title": {
+        "en": "Paris: transit ban for trucks over 7.5 t",
+        "ar": "باريس: منع عبور الشاحنات فوق 7.5 طن",
+        "es": "París: prohibido el tránsito de camiones de más de 7,5 t",
+        "ru": "Париж: транзит грузовиков свыше 7,5 т запрещён",
+        "fr": "Paris : transit interdit aux poids lourds de plus de 7,5 t",
+        "de": "Paris: Transitverbot für Lkw über 7,5 t"
+      },
+      "message": {
+        "en": "A13 Saint-Cloud tunnel closed until end of August 2027. Trucks over 7.5 t in transit must go around Paris on the Francilienne (A104 / N104 / N184). Route calculated around Paris.",
+        "ar": "نفق سان كلو على A13 مغلق حتى نهاية غشت 2027. يجب على الشاحنات العابرة فوق 7.5 طن الالتفاف حول باريس عبر الطريق الدائري Francilienne (A104 / N104 / N184). تم حساب المسار حول باريس.",
+        "es": "Túnel de Saint-Cloud (A13) cerrado hasta finales de agosto de 2027. Los camiones de más de 7,5 t en tránsito deben rodear París por la Francilienne (A104 / N104 / N184). Ruta calculada rodeando París.",
+        "ru": "Тоннель Сен-Клу на A13 закрыт до конца августа 2027. Транзитные грузовики свыше 7,5 т должны объезжать Париж по Francilienne (A104 / N104 / N184). Маршрут проложен в объезд Парижа.",
+        "fr": "Tunnel de Saint-Cloud (A13) fermé jusqu'à fin août 2027. Les poids lourds de plus de 7,5 t en transit doivent contourner Paris par la Francilienne (A104 / N104 / N184). Itinéraire calculé autour de Paris.",
+        "de": "A13-Tunnel Saint-Cloud bis Ende August 2027 gesperrt. Lkw über 7,5 t im Transit müssen Paris über die Francilienne (A104 / N104 / N184) umfahren. Route um Paris berechnet."
+      },
+      "region": [
+        [
+          49.24,
+          1.71
+        ],
+        [
+          49.23,
+          2.17
+        ],
+        [
+          49.15,
+          2.51
+        ],
+        [
+          49.11,
+          2.8
+        ],
+        [
+          49.08,
+          3.07
+        ],
+        [
+          48.92,
+          3.48
+        ],
+        [
+          48.73,
+          3.46
+        ],
+        [
+          48.56,
+          3.42
+        ],
+        [
+          48.38,
+          3.06
+        ],
+        [
+          48.22,
+          3.02
+        ],
+        [
+          48.12,
+          2.94
+        ],
+        [
+          48.13,
+          2.48
+        ],
+        [
+          48.29,
+          2.25
+        ],
+        [
+          48.32,
+          1.98
+        ],
+        [
+          48.44,
+          1.92
+        ],
+        [
+          48.57,
+          1.64
+        ],
+        [
+          48.7,
+          1.58
+        ],
+        [
+          48.84,
+          1.45
+        ],
+        [
+          49.07,
+          1.61
+        ]
+      ],
+      "avoid": [
+        [
+          48.7,
+          2.15,
+          48.93,
+          2.58
+        ],
+        [
+          48.93,
+          2.15,
+          48.98,
+          2.4
+        ]
+      ],
+      "source": "https://www.prefectures-regions.gouv.fr/ile-de-france"
+    }
+  ]
+}
