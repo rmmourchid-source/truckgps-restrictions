@@ -71,27 +71,10 @@ jobs:
           gzip -9 -k restrictions.db
           ls -lh restrictions.db restrictions.db.gz
 
-      - name: Build speed-limit database
+      - name: Build speed-limit databases (one file per country)
         run: |
-          python3 build/build_speed_db.py work speedlimits.db
-          gzip -9 -k speedlimits.db
-          ls -lh speedlimits.db speedlimits.db.gz
-          python3 - <<'PY'
-          import hashlib, json, sqlite3
-          meta = dict(sqlite3.connect("speedlimits.db").execute("SELECT key, value FROM meta"))
-          data = open("speedlimits.db.gz", "rb").read()
-          manifest = {
-              "version": meta["version"],
-              "built_at": meta["built_at"],
-              "regions": meta["regions"].split(","),
-              "ways": int(meta["ways"]),
-              "bytes": len(data),
-              "sha256": hashlib.sha256(data).hexdigest(),
-              "attribution": meta["attribution"],
-          }
-          json.dump(manifest, open("speed-manifest.json", "w"), indent=2)
-          print(json.dumps(manifest, indent=2))
-          PY
+          python3 build/build_speed_db.py work speed
+          ls -lh speed
 
       - name: Write manifest
         run: |
@@ -117,6 +100,6 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           gh release delete latest --yes --cleanup-tag || true
-          gh release create latest restrictions.db.gz manifest.json speedlimits.db.gz speed-manifest.json \
+          gh release create latest restrictions.db.gz manifest.json speed/speed-manifest.json speed/speedlimits-*.db.gz \
             --title "Truck restrictions $(date -u +%Y-%m-%d)" \
             --notes "Built from OpenStreetMap (c) OpenStreetMap contributors, ODbL 1.0."
