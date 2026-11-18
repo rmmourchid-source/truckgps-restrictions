@@ -5,7 +5,14 @@ Builds the TruckGPS offline speed-limit database.
 Input  (work dir): <region>.speedseq   osmium geojsonseq export of roads
                                         (motorway … unclassified + links)
                                         that carry a maxspeed tag
-Output: speedlimits.db (SQLite)
+Output: one database per country, so the app downloads only the countries
+        a route passes through:
+          speedlimits-<region>.db.gz   (gzip of the SQLite file)
+          speed-manifest.json          (version, and per country: size,
+                                        sha256, bounding box and a simplified
+                                        border from <region>.poly)
+
+Usage: build_speed_db.py <work_dir> <out_dir>
 
 Tables
   meta(key, value)
@@ -19,6 +26,8 @@ Tile = floor((lat+90)*20)*10000 + floor((lon+180)*20)   (0.05 degree grid)
 
 Data (c) OpenStreetMap contributors, ODbL 1.0.
 """
+import gzip
+import hashlib
 import json
 import math
 import os
@@ -131,7 +140,42 @@ def line_points(feature):
     return []
 
 
-def main(work_dir, output_path):
+def parse_poly(path, max_points=160):
+    """Geofabrik .poly → list of outer rings [[lat, lon], …] (holes skipped),
+    each thinned to at most max_points points."""
+    if not os.path.exists(path):
+        return []
+    rings, ring, hole = [], None, False
+    with open(path, encoding="utf-8", errors="replace") as handle:
+        lines = [line.strip() for line in handle]
+    for line in lines[1:]:
+        if not line:
+            continue
+        if line == "END":
+            if ring is not None:
+                if not hole and len(ring) >= 3:
+                    rings.append(ring)
+                ring = None
+            continue
+        if ring is None:
+            hole = line.startswith("!")
+            ring = []
+            continue
+        parts = line.split()
+        if len(parts) >= 2:
+            try:
+                ring.append([round(float(parts[1]), 4), round(float(parts[0]), 4)])
+            except ValueError:
+                pass
+    thinned = []
+    for r in rings:
+        step = max(1, math.ceil(len(r) / max_points))
+        thinned.append(r[::step])
+    return thinned
+
+
+def build_region(work_dir, region, output_path):
+    """Builds one country's SQLite file. Returns (ways, rows, bbox)."""
     if os.path.exists(output_path):
         os.remove(output_path)
     db = sqlite3.connect(output_path)
@@ -141,61 +185,59 @@ def main(work_dir, output_path):
         CREATE TABLE seg(tile INTEGER, kmh INTEGER, hgv INTEGER, oneway INTEGER, geom TEXT);
         """
     )
-
-    regions = sorted(f[:-len(".speedseq")] for f in os.listdir(work_dir) if f.endswith(".speedseq"))
-    if not regions:
-        sys.exit("no .speedseq files found")
-
     seen = set()
     ways = 0
     rows = 0
-    for region in regions:
-        for feature in read_features(os.path.join(work_dir, region + ".speedseq")):
-            props = feature.get("properties") or {}
-            osm_id = props.get("@id")
-            if osm_id is None or osm_id in seen:
+    south, west, north, east = 90.0, 180.0, -90.0, -180.0
+    for feature in read_features(os.path.join(work_dir, region + ".speedseq")):
+        props = feature.get("properties") or {}
+        osm_id = props.get("@id")
+        if osm_id is None or osm_id in seen:
+            continue
+        seen.add(osm_id)
+
+        kmh = parse_speed(props.get("maxspeed"))
+        if kmh is None:
+            forward = parse_speed(props.get("maxspeed:forward"))
+            backward = parse_speed(props.get("maxspeed:backward"))
+            both = [s for s in (forward, backward) if s]
+            kmh = min(both) if both else None
+        hgv = parse_speed(props.get("maxspeed:hgv")) or 0
+        if kmh is None and not hgv:
+            continue
+        if kmh is None:
+            kmh = hgv
+
+        oneway_tag = str(props.get("oneway", "")).strip().lower()
+        highway = str(props.get("highway", ""))
+        if oneway_tag in ("yes", "true", "1") or highway in ("motorway", "motorway_link"):
+            oneway = 1
+        elif oneway_tag == "-1":
+            oneway = -1
+        else:
+            oneway = 0
+        if oneway_tag == "no":
+            oneway = 0
+
+        for points in line_points(feature):
+            if len(points) < 2:
                 continue
-            seen.add(osm_id)
-
-            kmh = parse_speed(props.get("maxspeed"))
-            if kmh is None:
-                forward = parse_speed(props.get("maxspeed:forward"))
-                backward = parse_speed(props.get("maxspeed:backward"))
-                both = [s for s in (forward, backward) if s]
-                kmh = min(both) if both else None
-            hgv = parse_speed(props.get("maxspeed:hgv")) or 0
-            if kmh is None and not hgv:
-                continue
-            if kmh is None:
-                kmh = hgv
-
-            oneway_tag = str(props.get("oneway", "")).strip().lower()
-            highway = str(props.get("highway", ""))
-            if oneway_tag in ("yes", "true", "1") or highway in ("motorway", "motorway_link"):
-                oneway = 1
-            elif oneway_tag == "-1":
-                oneway = -1
-            else:
-                oneway = 0
-            if oneway_tag == "no":
-                oneway = 0
-
-            for points in line_points(feature):
-                if len(points) < 2:
-                    continue
-                simple = simplify(points, SIMPLIFY_METERS)
-                geom = encode_polyline(simple)
-                for tile in tiles_for(simple):
-                    db.execute("INSERT INTO seg VALUES (?, ?, ?, ?, ?)", (tile, kmh, hgv, oneway, geom))
-                    rows += 1
-            ways += 1
+            simple = simplify(points, SIMPLIFY_METERS)
+            for lat, lon in simple:
+                south, north = min(south, lat), max(north, lat)
+                west, east = min(west, lon), max(east, lon)
+            geom = encode_polyline(simple)
+            for tile in tiles_for(simple):
+                db.execute("INSERT INTO seg VALUES (?, ?, ?, ?, ?)", (tile, kmh, hgv, oneway, geom))
+                rows += 1
+        ways += 1
 
     db.execute("CREATE INDEX seg_tile ON seg(tile)")
     built = datetime.now(timezone.utc)
     meta = {
         "version": built.strftime("%Y-%m-%d"),
         "built_at": built.isoformat(timespec="seconds"),
-        "regions": ",".join(regions),
+        "regions": region,
         "ways": str(ways),
         "attribution": "(c) OpenStreetMap contributors, ODbL 1.0",
     }
@@ -203,7 +245,59 @@ def main(work_dir, output_path):
     db.commit()
     db.execute("VACUUM")
     db.close()
-    print(f"speed limits: regions={regions} ways={ways} rows={rows}")
+    bbox = [round(south, 4), round(west, 4), round(north, 4), round(east, 4)] if ways else []
+    return ways, rows, bbox
+
+
+def main(work_dir, out_dir):
+    os.makedirs(out_dir, exist_ok=True)
+    regions = sorted(f[:-len(".speedseq")] for f in os.listdir(work_dir) if f.endswith(".speedseq"))
+    if not regions:
+        sys.exit("no .speedseq files found")
+
+    built = datetime.now(timezone.utc)
+    countries = []
+    for region in regions:
+        db_path = os.path.join(out_dir, f"speedlimits-{region}.db")
+        gz_path = db_path + ".gz"
+        ways, rows, bbox = build_region(work_dir, region, db_path)
+        if not ways:
+            print(f"{region}: no roads with a speed limit, skipped")
+            os.remove(db_path)
+            continue
+        with open(db_path, "rb") as src, gzip.open(gz_path, "wb", compresslevel=9) as dst:
+            while True:
+                chunk = src.read(1 << 20)
+                if not chunk:
+                    break
+                dst.write(chunk)
+        os.remove(db_path)
+        digest = hashlib.sha256()
+        with open(gz_path, "rb") as handle:
+            for chunk in iter(lambda: handle.read(1 << 20), b""):
+                digest.update(chunk)
+        size = os.path.getsize(gz_path)
+        countries.append({
+            "name": region,
+            "bytes": size,
+            "sha256": digest.hexdigest(),
+            "ways": ways,
+            "bbox": bbox,
+            "poly": parse_poly(os.path.join(work_dir, region + ".poly")),
+        })
+        print(f"{region}: ways={ways} rows={rows} gz={size / 1048576:.1f} MB bbox={bbox}")
+
+    manifest = {
+        "format": 2,
+        "version": built.strftime("%Y-%m-%d"),
+        "built_at": built.isoformat(timespec="seconds"),
+        "attribution": "(c) OpenStreetMap contributors, ODbL 1.0",
+        "countries": countries,
+    }
+    with open(os.path.join(out_dir, "speed-manifest.json"), "w") as handle:
+        json.dump(manifest, handle, separators=(",", ":"))
+    print(f"manifest: {len(countries)} countries, "
+          f"{sum(c['bytes'] for c in countries) / 1048576:.1f} MB in total")
 
 
 if __name__ == "__main__":
