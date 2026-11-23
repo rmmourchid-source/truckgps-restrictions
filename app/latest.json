@@ -1,1 +1,20 @@
+{
+  "version_code": 88,
+  "version_name": "1.88",
+  "min_version_code": 0,
+  "apk_url": "https://github.com/rmmourchid-source/truckgps-restrictions/releases/download/app/TruckGPS.apk",
+  "notes": {
+    "en": "• Update popup: you will be told when a new version is ready.\n• Truck limits just after departure are now avoided (was 1.5 km, now 300 m).\n• Fewer TomTom calls, so live traffic keeps working for everyone.",
+    "ar": "• نافذة التحديث: ستتوصل بإشعار عند صدور نسخة جديدة.\n• يتم الآن تفادي منع الشاحنات قرب نقطة الانطلاق (كان 1.5 كم، الآن 300 م).\n• استعمال أقل لـ TomTom حتى تبقى معلومات حركة المرور شغالة للجميع.",
+    "es": "• Aviso de actualización: se le avisará cuando haya una versión nueva.\n• Las limitaciones para camiones justo después de salir ahora se evitan (antes 1,5 km, ahora 300 m).\n• Menos llamadas a TomTom para que el tráfico en directo funcione para todos.",
+    "fr": "• Fenêtre de mise à jour : vous serez prévenu quand une nouvelle version est prête.\n• Les interdictions poids lourds juste après le départ sont maintenant évitées (1,5 km avant, 300 m maintenant).\n• Moins d'appels TomTom, pour que le trafic en direct marche pour tous.",
+    "ru": "• Уведомление об обновлении: вы узнаете, когда выйдет новая версия.\n• Ограничения для грузовиков сразу после старта теперь объезжаются (было 1,5 км, теперь 300 м).\n• Меньше запросов к TomTom, чтобы пробки работали у всех.",
+    "de": "• Update-Hinweis: Sie werden informiert, wenn eine neue Version bereit ist.\n• LKW-Beschränkungen kurz nach dem Start werden jetzt umfahren (vorher 1,5 km, jetzt 300 m).\n• Weniger TomTom-Abfragen, damit Live-Verkehr für alle funktioniert."
+  },
+  "tomtom": {
+    "snap_per_phone_month": 0,
+    "incidents_per_phone_month": 250,
+    "incident_interval_min": 10
+  }
+}
 
