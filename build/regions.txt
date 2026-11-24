@@ -16,3 +16,6 @@ europe/slovakia
 europe/austria
 europe/serbia
 europe/lithuania
+europe/luxembourg
+europe/switzerland
+europe/czech-republic
