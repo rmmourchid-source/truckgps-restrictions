@@ -1,15 +1,15 @@
 {
-  "version_code": 89,
-  "version_name": "1.89",
+  "version_code": 90,
+  "version_name": "1.90",
   "min_version_code": 0,
   "apk_url": "https://github.com/rmmourchid-source/truckgps-restrictions/releases/download/app/TruckGPS.apk",
   "notes": {
-    "en": "• Light-red bar at the top when there is no internet; green when it comes back.\n• Release build fixes.",
-    "ar": "• شريط أحمر فاتح في الأعلى عند انقطاع الإنترنت، وأخضر عند عودته.\n• إصلاحات في نسخة التطبيق.",
-    "es": "• Barra roja clara arriba cuando no hay internet; verde cuando vuelve.\n• Correcciones de la versión.",
-    "fr": "• Barre rouge clair en haut sans internet ; verte quand il revient.\n• Corrections de la version.",
-    "ru": "• Светло-красная полоса сверху, когда нет интернета; зелёная, когда он вернулся.\n• Исправления сборки.",
-    "de": "• Hellrote Leiste oben ohne Internet; grün, wenn es zurück ist.\n• Korrekturen am Build."
+    "en": "• Internet bar: short one-line message, placed under the turn instruction so it never hides the next turn.",
+    "ar": "• شريط الإنترنت: رسالة قصيرة في سطر واحد، تحت تعليمات الانعطاف حتى لا تغطي المنعطف القادم.",
+    "es": "• Barra de internet: mensaje corto en una línea, bajo la indicación de giro para no tapar el próximo giro.",
+    "fr": "• Barre internet : message court sur une ligne, sous l'indication de virage pour ne jamais cacher la prochaine manœuvre.",
+    "ru": "• Полоса интернета: короткое сообщение в одну строку, под подсказкой поворота, чтобы не закрывать её.",
+    "de": "• Internet-Leiste: kurze einzeilige Meldung unter der Abbiegeanzeige, damit sie nichts verdeckt."
   },
   "tomtom": {
     "snap_per_phone_month": 0,
