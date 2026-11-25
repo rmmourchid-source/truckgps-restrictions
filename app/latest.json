@@ -1,15 +1,16 @@
 {
-  "version_code": 90,
-  "version_name": "1.90",
+  "version_code": 91,
+  "version_name": "1.91",
   "min_version_code": 0,
   "apk_url": "https://github.com/rmmourchid-source/truckgps-restrictions/releases/download/app/TruckGPS.apk",
+  "map_style": "truckgps",
   "notes": {
-    "en": "• Internet bar: short one-line message, placed under the turn instruction so it never hides the next turn.",
-    "ar": "• شريط الإنترنت: رسالة قصيرة في سطر واحد، تحت تعليمات الانعطاف حتى لا تغطي المنعطف القادم.",
-    "es": "• Barra de internet: mensaje corto en una línea, bajo la indicación de giro para no tapar el próximo giro.",
-    "fr": "• Barre internet : message court sur une ligne, sous l'indication de virage pour ne jamais cacher la prochaine manœuvre.",
-    "ru": "• Полоса интернета: короткое сообщение в одну строку, под подсказкой поворота, чтобы не закрывать её.",
-    "de": "• Internet-Leiste: kurze einzeilige Meldung unter der Abbiegeanzeige, damit sie nichts verdeckt."
+    "en": "• New TruckGPS map look: orange motorways, yellow main roads, bigger street names and road numbers. Day and night.\n• Countries list refreshes when you open it.",
+    "ar": "• مظهر خريطة TruckGPS الجديد: الطرق السيارة بالبرتقالي، الطرق الرئيسية بالأصفر، أسماء الشوارع وأرقام الطرق أكبر. نهارًا وليلًا.\n• قائمة الدول تتحدث عند فتحها.",
+    "es": "• Nuevo aspecto del mapa TruckGPS: autopistas naranjas, carreteras principales amarillas, nombres y números de carretera más grandes. Día y noche.\n• La lista de países se actualiza al abrirla.",
+    "fr": "• Nouveau look de carte TruckGPS : autoroutes orange, routes principales jaunes, noms de rues et numéros de routes plus grands. Jour et nuit.\n• La liste des pays se met à jour à l'ouverture.",
+    "ru": "• Новый вид карты TruckGPS: оранжевые автомагистрали, жёлтые главные дороги, крупнее названия улиц и номера дорог. День и ночь.\n• Список стран обновляется при открытии.",
+    "de": "• Neuer TruckGPS-Kartenstil: orange Autobahnen, gelbe Hauptstraßen, größere Straßennamen und Straßennummern. Tag und Nacht.\n• Länderliste aktualisiert sich beim Öffnen."
   },
   "tomtom": {
     "snap_per_phone_month": 0,
